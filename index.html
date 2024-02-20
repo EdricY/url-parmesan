@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URL Params for normal people</title>
+    <style>
+      body {
+        background-color: white;
+        background-color: Canvas;
+        color: black;
+        color: CanvasText;
+        color-scheme: light dark;
+
+        font-family: system-ui;
+        margin-inline: auto;
+        max-width: 50rem;
+        padding: 1rem;
+        box-sizing: border-box;
+        margin-bottom: 5rem;
+      }
+      h1 {
+        font: 2.5rem Roboto, Arial, sans-serif;
+      }
+      h2 {
+        font: 2rem Roboto, Arial, sans-serif;
+      }
+      input {
+        padding: 0.5rem;
+        font-size: 1.2rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      #outputDiv {
+        padding: 0.5rem;
+      }
+
+      .input-wrap {
+        display: flex;
+        align-items: center;
+        margin-top: 0.5rem;
+        gap: 0.25rem 0.5rem;
+      }
+
+      .input-wrap {
+        display: flex;
+        align-items: center;
+        margin-top: 0.5rem;
+        gap: 0.25rem 0.5rem;
+      }
+
+      #urlOutput {
+        padding: 0.5rem;
+      }
+
+      .small-btn {
+        display: block;
+        cursor: pointer;
+        background-color: transparent;
+        padding: 0;
+        border: none;
+        font-size: 0.75rem;
+        font-family: system-ui;
+        white-space: nowrap;
+        overflow-x: auto;
+        max-width: 100%;
+        padding-block: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>What are URL Search Params?</h1>
+    <p>
+      URL search params include data passed in the url. In different contexts,
+      they might be called &quot;query string&quot;, "query arguments", or just
+      "URL params". They are often used to pass additional data to the page
+      you're visiting, such as a product filter, search terms, or tracking
+      information.
+    </p>
+    Look at the difference between these links! (click each to move it into the
+    inspector)
+    <ul>
+      <li>
+        a google search:
+        <button class="small-btn" onclick="changeUrlInput(event)">
+          https://www.google.com/search?q=Georges+Seurat
+        </button>
+      </li>
+      <li>
+        a result of clicking "I'm Feeling Lucky":
+        <button class="small-btn" onclick="changeUrlInput(event)">
+          https://www.google.com/search?q=Georges+Seurat&csf=b&ct=ifl&cad=2:artistic&ei=WoPTZaP-KPTykPIPysaZKA&ved=0ahUKEwijk7n46reEAxV0OUQIHUpjBgUQnRsIFA&rct=j
+        </button>
+      </li>
+      <li>
+        amazon's trending deals page:
+        <button class="small-btn" onclick="changeUrlInput(event)">
+          https://www.amazon.com/gp/goldbox/
+        </button>
+      </li>
+      <li>
+        clicking "See all deals" from the home page:
+        <button class="small-btn" onclick="changeUrlInput(event)">
+          https://www.amazon.com/gp/goldbox/?_encoding=UTF8&_encoding=UTF8&ref_=dlx_gate_sd_dcl_vai_dt_pd_gw_unk&pd_rd_w=Z2Bgm&content-id=amzn1.sym.26a365d6-3002-449e-bfff-1848c98a3efd&pf_rd_p=26a365d6-3002-449e-bfff-1848c98a3efd&pf_rd_r=9WEM6SSXJKDHAXDQJ0ZT&pd_rd_wg=Y5kT8&pd_rd_r=ef10b733-b263-4b8b-9a9c-9bb39d7f5710
+        </button>
+      </li>
+    </ul>
+
+    <h2>Inspect URL params here!</h2>
+    <!-- <h2>URL Parmesan</h2> -->
+    <input
+      type="text"
+      placeholder="Paste your URL here"
+      id="urlInput"
+      name="URL"
+    />
+    <div id="outputDiv"></div>
+
+    <h2>Edit your own URL params here!</h2>
+
+    <input
+      type="text"
+      placeholder="Base URL path"
+      id="baseInput"
+      name="Base URL"
+    />
+    <div id="inputDiv">
+      <div class="input-wrap">
+        <input type="text" placeholder="key" />
+        <span>=</span>
+        <input type="text" placeholder="value" />
+      </div>
+    </div>
+    <div id="urlOutput"></div>
+  </body>
+  <script>
+    //inspect mode
+    const urlInput = document.getElementById("urlInput");
+    const outputDiv = document.getElementById("outputDiv");
+    function changeUrlInput(e) {
+      urlInput.value = e.target.innerText;
+      renderOutputDiv();
+    }
+
+    function renderOutputDiv() {
+      try {
+        outputDiv.innerHTML = "";
+        if (!urlInput.value) return;
+        const url = new URL(urlInput.value);
+        const params = url.searchParams;
+        for (let [k, v] of params.entries()) {
+          let div = document.createElement("div");
+          div.innerText = `${k} = ${v}`;
+          outputDiv.appendChild(div);
+        }
+
+        const bottomDiv = document.createElement("div");
+        const a = document.createElement("a");
+        a.setAttribute("href", url);
+        a.textContent = "visit that link";
+        const btn = document.createElement("button");
+        btn.innerText = "pop that in the editor!";
+        btn.addEventListener("click", moveToEditor);
+        bottomDiv.appendChild(a);
+        bottomDiv.appendChild(document.createTextNode(" or "));
+        bottomDiv.appendChild(btn);
+        outputDiv.append(bottomDiv);
+      } catch (e) {
+        outputDiv.innerText = e.toString();
+      }
+    }
+    urlInput.addEventListener("input", renderOutputDiv);
+
+    function moveToEditor() {
+      const url = new URL(urlInput.value);
+      baseInput.value = url.origin + url.pathname;
+      const params = url.searchParams;
+      inputDiv.innerHTML = "";
+      for (let [k, v] of params.entries()) {
+        appendInputRow();
+        const inputs = inputDiv.getElementsByTagName("input");
+        const lastKeyInput = inputs[inputs.length - 2];
+        const lastValInput = inputs[inputs.length - 1];
+        lastKeyInput.value = k;
+        lastValInput.value = v;
+      }
+      appendInputRow();
+      renderUrlOutput();
+    }
+
+    // edit mode
+    const baseInput = document.getElementById("baseInput");
+    const inputDiv = document.getElementById("inputDiv");
+    const urlOutput = document.getElementById("urlOutput");
+    baseInput.addEventListener("input", renderUrlOutput);
+
+    function appendInputRow() {
+      const div = document.createElement("div");
+      div.innerHTML = `<input type="text" placeholder="key" />
+            <span>=</span>
+            <input type="text" placeholder="value" />
+          `;
+      div.setAttribute("class", "input-wrap");
+
+      inputDiv.appendChild(div);
+    }
+
+    inputDiv.addEventListener("input", () => {
+      renderUrlOutput();
+      const inputs = inputDiv.getElementsByTagName("input");
+      const lastKeyInput = inputs[inputs.length - 2];
+      if (lastKeyInput.value) {
+        appendInputRow();
+      }
+      if (inputs.length > 4) {
+        if (inputs[inputs.length - 1].value) return;
+        if (inputs[inputs.length - 2].value) return;
+        if (inputs[inputs.length - 3].value) return;
+        if (inputs[inputs.length - 4].value) return;
+        //remove last row
+        inputDiv.removeChild(inputDiv.lastChild);
+      }
+    });
+
+    inputDiv.addEventListener("keydown", (e) => {
+      let newIndex = null;
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      const inputs = [...inputDiv.getElementsByTagName("input")];
+      const idx = inputs.findIndex((x) => x == e.target);
+      if (e.key == "ArrowUp") newIndex = idx - 2;
+      else if (e.key == "ArrowDown") newIndex = idx + 2;
+
+      if (newIndex == null) return;
+      if (newIndex < 0) {
+        baseInput.focus();
+        return;
+      }
+
+      inputs[newIndex]?.focus();
+    });
+
+    function renderUrlOutput() {
+      try {
+        urlOutput.innerText = "";
+        if (!baseInput.value) return;
+
+        const url = new URL(baseInput.value);
+        const inputs = [...inputDiv.getElementsByTagName("input")];
+        const keys = inputs.filter((_, i) => i % 2 === 0);
+        const vals = inputs.filter((_, i) => i % 2 === 1);
+        for (let i = 0; i < keys.length; i++) {
+          const key = keys[i].value;
+          const val = vals[i].value;
+          if (key) {
+            url.searchParams.append(key, val);
+          }
+        }
+
+        const div = document.createElement("div");
+        div.textContent = url;
+        const a = document.createElement("a");
+        a.setAttribute("href", url);
+        a.textContent = "that guy as a link";
+        const btn = document.createElement("button");
+        btn.innerText = "toss that in the inspector!";
+        btn.addEventListener("click", () => moveToInspector(url));
+
+        urlOutput.append(div, a, document.createTextNode(" or "), btn);
+      } catch (e) {
+        urlOutput.innerText = e.toString();
+      }
+    }
+
+    function moveToInspector(url) {
+      urlInput.value = url;
+      renderOutputDiv();
+    }
+  </script>
+</html>
